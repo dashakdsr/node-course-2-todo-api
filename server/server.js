@@ -6,6 +6,7 @@ const bodyParser = require('body-parser')
 const {ObjectID} = require('mongodb')
 
 const {Todo} = require('./models/todo')
+const {User} = require('./models/user')
 
 let app = express()
 let port = process.env.PORT || 3000
@@ -97,6 +98,24 @@ app.patch('/todos/:id', (req, res) => {
     res.send({todo})
   }).catch((e) => {
     res.status(400).send()
+  })
+})
+
+app.post('/users', (req, res) => {
+  console.log(req.body)
+  let body = _.pick(req.body, ['email', 'password'])
+  let user = new User(body)
+
+  // User.findByToken
+
+  user.save().then((doc) => {
+    return user.generateAuthToken()
+
+  }, (err) => {
+    console.log('Unable to save ', err)
+    res.status(400).send(err)
+  }).then((token) => {
+    res.header('x-auth', token).send(user)
   })
 })
 
