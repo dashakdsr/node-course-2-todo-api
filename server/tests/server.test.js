@@ -10,7 +10,9 @@ const todos = [{
   text: 'Smth to do'
 }, {
   _id: new ObjectID(),
-  text: 'Smth to do 2'
+  text: 'Smth to do 2',
+  completed: true,
+  completedAt: 434356
 }]
 
 beforeEach((done) => {
@@ -143,3 +145,38 @@ describe('GET /todos/:id', () => {
         .end(done)
     })
   })
+
+describe('PATCH /todos/:id', () => {
+  it('should update a todo', (done) => {
+    request(app)
+      .patch(`/todos/${todos[0]._id.toHexString()}`)
+      .send({
+        text: 'Updated text',
+        completed: true
+      })
+      .expect(200)
+      .expect((res) => {
+        expect(res.body.todo.text).toBe('Updated text')
+        expect(res.body.todo.completed).toBe(true)
+        expect(res.body.todo.completedAt).toBeA('number')
+      })
+      .end(done)
+  })
+
+  it('should clear completedAt when tod is not completed', (done) => {
+    request(app)
+      .patch(`/todos/${todos[0]._id.toHexString()}`)
+      .send({
+        text: 'Updated text',
+        completed: false
+      })
+      .expect(200)
+      .expect((res) => {
+        expect(res.body.todo.text).toBe('Updated text')
+        expect(res.body.todo.completed).toBe(false)
+        expect(res.body.todo.completedAt).toNotExist()
+      })
+      .end(done)
+  })
+
+})
