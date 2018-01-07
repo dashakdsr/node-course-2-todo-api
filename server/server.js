@@ -7,6 +7,7 @@ const {ObjectID} = require('mongodb')
 
 const {Todo} = require('./models/todo')
 const {User} = require('./models/user')
+const {authenticate} = require('./middleware/authenticate')
 
 let app = express()
 let port = process.env.PORT || 3000
@@ -106,17 +107,18 @@ app.post('/users', (req, res) => {
   let body = _.pick(req.body, ['email', 'password'])
   let user = new User(body)
 
-  // User.findByToken
-
   user.save().then((doc) => {
     return user.generateAuthToken()
-
   }, (err) => {
     console.log('Unable to save ', err)
     res.status(400).send(err)
   }).then((token) => {
     res.header('x-auth', token).send(user)
   })
+})
+
+app.get('/users/me', authenticate, (req, res) => {
+  res.send(req.user)
 })
 
 app.listen(port, () => {
